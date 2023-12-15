@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({
+class MyApp extends StatefulWidget {
+  const MyApp({
     super.key,
   });
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final _controller = OverlayPortalController();
+
   final _widgetKey = GlobalKey();
+
+  Offset widgetOffset = const Offset(0, 0);
+  bool blurVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    Offset widgetOffset = const Offset(0, 0);
-
     void findWidgetPosition() {
       RenderBox renderBox =
           _widgetKey.currentContext?.findRenderObject() as RenderBox;
@@ -29,6 +36,12 @@ class MyApp extends StatelessWidget {
       );
     }
 
+    void showBlur() {
+      setState(() {
+        blurVisible = !blurVisible;
+      });
+    }
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -37,13 +50,25 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: Container(
           color: Colors.amber,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
+              InkWell(
+                onTap: () {
+                  showBlur();
+                  _controller.hide();
+                },
+                child: Visibility(
+                  visible: blurVisible,
+                  child: Container(
+                    color: Colors.black38,
+                  ),
+                ),
+              ),
               Center(
                 child: ElevatedButton(
                   key: _widgetKey,
                   onPressed: () {
+                    showBlur();
                     findWidgetPosition();
 
                     _controller.toggle();
@@ -52,7 +77,8 @@ class MyApp extends StatelessWidget {
                     controller: _controller,
                     overlayChildBuilder: (context) {
                       return PopoverWidget(
-                        direction: PopoverDirection.topCenter,
+                        //Posicione o Overlay conforme o ENUM de opções!
+                        direction: PopoverDirection.bottomCenter,
                         positionY: widgetOffset.dy,
                         positionX: widgetOffset.dx,
                       );
@@ -96,7 +122,7 @@ class PopoverWidget extends StatelessWidget {
       case PopoverDirection.topCenter:
         return Positioned(
           bottom: positionY,
-          left: positionX - 54,
+          left: positionX - 52,
           child: Container(
             height: 200,
             width: 200,
@@ -135,7 +161,7 @@ class PopoverWidget extends StatelessWidget {
       case PopoverDirection.bottomCenter:
         return Positioned(
           top: positionY,
-          left: positionX - 54,
+          left: positionX - 52,
           child: Container(
             height: 200,
             width: 200,
